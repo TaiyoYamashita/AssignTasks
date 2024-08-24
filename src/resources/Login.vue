@@ -1,44 +1,70 @@
 <template>
     <div>
-        <h1>新規ユーザー登録</h1>
+        <h1>ログイン</h1>
         <form @submit.prevent="login">
-            <input v-model="room_id" placeholder="部屋" required />
+            <select v-model="roomId" required>
+                <option disabled value="">部屋選択</option>
+                <option v-for="room in rooms" :key="room.id" :value="room.id">
+                    {{ room.room_name }}
+                </option>
+            </select>
             <input v-model="name" placeholder="ユーザー名" required />
             <input v-model="password" type="password" placeholder="パスワード" required />
-            <button @click="registerAndLogin">ログイン</button>
+            <button type="submit">ログイン</button>
         </form>
         <p v-if="error">{{ error }}</p>
-        <router-link to="/">ログインはこちら</router-link>
+        <router-link to="/register">新規ユーザー登録はこちら</router-link>
     </div>
 </template>
 
 <script setup>
-    import supabase from '../supabase'
-    export default {
-      data() {
-        return {
-            roomId: '',
-            name: '',
-            password: '',
-            error: ''
-        }
-    },
-    methods: {
-        async registerAndLogin() {
-            const { data, error } = await supabase.from('users').insert([{
-                room_id: this.roomId,
-                name: this.name,
-                password: this.password,
-                last_login: new Date().toISOString()
-            }])
+    import { ref, onMounted } from 'vue';
+    import { useRouter } from 'vue-router';
+    import supabase from '../supabase';
 
-            if (error) {
-                console.error('Error registering user:', error.message)
-            } else {
-                console.log('User registered and logged in:', data)
-                this.$router.push(`/room/${this.roomId}`)
-            }
+    const rooms = ref([]);
+    const roomId = ref('');
+    const name = ref('');
+    const password = ref('');
+    const error = ref('');
+
+    const router = useRouter();
+
+    onMounted(async () => {
+        const { data, error: supabaseError } = await supabase.from('rooms').select('*').order('id', { ascending: true });
+        if (supabaseError) {
+            console.error('Error fetching rooms:', supabaseError.message);
+            error.value = '部屋情報の取得に失敗しました。';
+        } else {
+            rooms.value = data;
         }
-    }
-}
+    });
+
+    const login = async () => {
+        try {
+            const { data, error: supabaseError } = await supabase
+                .from('users')
+                .select('*')
+                .eq('room_id', roomId.value)
+                .eq('name', name.value)
+                .eq('password', password.value);
+
+            if (supabaseError) {
+                throw new Error(supabaseError.message);
+            }
+
+            if (data.length > 0) {
+                const userId = data[0].id;
+                const currentTime = new Date().toISOString();
+                const { error: updateError } = await supabase.from('users').update({ last_login: currentTime }).eq('id', userId);
+                router.push(`/room/${roomId.value}`);
+            } else {
+                password.value = '';
+                error.value = '条件に一致するユーザーが見つかりませんでした。';
+            }
+        } catch (err) {
+            console.error('Login error:', err.message);
+            error.value = 'ログインに失敗しました。';
+        }
+    };
 </script>
