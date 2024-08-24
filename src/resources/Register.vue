@@ -1,23 +1,3 @@
-<template>
-    <div>
-        <h1>新規ユーザー登録</h1>
-        <form @submit.prevent="registerAndLogin">
-            <select v-model="roomId" required>
-                <option disabled value="">部屋を選択してください</option>
-                <option v-for="room in rooms" :key="room.id" :value="room.id">
-                    {{ room.room_name }}
-                </option>
-            </select>
-            <input v-model="name" placeholder="ユーザー名" required />
-            <input v-model="password" type="password" placeholder="パスワード" required />
-            <input v-model="confirmPassword" type="password" placeholder="パスワード（確認用）" required />
-            <button @click="registerAndLogin">登録してログイン</button>
-        </form>
-        <p v-if="error">{{ error }}</p>
-        <router-link to="/">ログインはこちら</router-link>
-    </div>
-</template>
-
 <script setup>
     import { ref, onMounted } from 'vue';
     import { useRouter } from 'vue-router';
@@ -33,12 +13,13 @@
     const router = useRouter();
 
     onMounted(async () => {
-        const { data, error: supabaseError } = await supabase.from('rooms').select('*').order('id', { ascending: true });
+        const { data, error: supabaseError } =
+            await supabase.from('rooms').select('*').order('id', { ascending: true });
         if (supabaseError) {
             console.error('Error fetching rooms:', supabaseError.message);
             error.value = '部屋情報の取得に失敗しました。';
         } else {
-            rooms.value = data; // roomsテーブルの全タプル情報をroomsに格納
+            rooms.value = data;
         }
     });
 
@@ -61,7 +42,29 @@
             errorMessage.value = error.message;
         } else {
             console.log('User registered and logged in:', data);
-            router.push(`/room/${roomId.value}`);
+            const { data, error: supabaseError } =
+                await supabase.from('users').select('id').order('id', { ascending: false }).limit(1);
+            router.push(`/room/${roomId.value}/${data[0].id}`);
         }
     }
 </script>
+
+<template>
+    <div>
+        <h1>新規ユーザー登録</h1>
+        <form @submit.prevent="registerAndLogin">
+            <select v-model="roomId" required>
+                <option disabled value="">部屋を選択してください</option>
+                <option v-for="room in rooms" :key="room.id" :value="room.id">
+                    {{ room.room_name }}
+                </option>
+            </select>
+            <input v-model="name" placeholder="ユーザー名" required />
+            <input v-model="password" type="password" placeholder="パスワード" required />
+            <input v-model="confirmPassword" type="password" placeholder="パスワード（確認用）" required />
+            <button @click="registerAndLogin">登録してログイン</button>
+        </form>
+        <p v-if="error">{{ error }}</p>
+        <router-link to="/">ログインはこちら</router-link>
+    </div>
+</template>
