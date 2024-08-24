@@ -1,4 +1,3 @@
 <template>
-    Room
-    <router-link to="/">ログアウト</router-link>
+    <ppp></ppp>
 </template>
