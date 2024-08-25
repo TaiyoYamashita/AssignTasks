@@ -3,14 +3,13 @@
     import { useRouter } from 'vue-router';
     import supabase from '../supabase';
 
+    const router = useRouter();
     const rooms = ref([]);
     const roomId = ref('');
     const name = ref('');
     const password = ref('');
     const confirmPassword = ref('');
     const errorMessage = ref('');
-
-    const router = useRouter();
 
     onMounted(async () => {
         const { data, error: supabaseError } =
@@ -42,9 +41,17 @@
             errorMessage.value = error.message;
         } else {
             console.log('User registered and logged in:', data);
-            const { data, error: supabaseError } =
-                await supabase.from('users').select('id').order('id', { ascending: false }).limit(1);
-            router.push(`/room/${roomId.value}/${data[0].id}`);
+            const { data, error: supabaseError } = await supabase
+                .from('users')
+                .select('id')
+                .order('id', { ascending: false }).limit(1);
+            router.push({
+                path: `/room/${data[0].room_id}`,
+                query: {
+                    userId: data[0].room_id,
+                    name: data[0].name
+                }
+            });
         }
     }
 </script>
@@ -64,7 +71,7 @@
             <input v-model="confirmPassword" type="password" placeholder="パスワード（確認用）" required />
             <button @click="registerAndLogin">登録してログイン</button>
         </form>
-        <p v-if="error">{{ error }}</p>
+        <p v-if="errorMessage">{{ errorMessage }}</p>
         <router-link to="/">ログインはこちら</router-link>
     </div>
 </template>

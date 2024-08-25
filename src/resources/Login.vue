@@ -12,8 +12,10 @@
     const router = useRouter();
 
     onMounted(async () => {
-        const { data, error: supabaseError } =
-            await supabase.from('rooms').select('*').order('id', { ascending: true });
+        const { data, error: supabaseError } = await supabase
+            .from('rooms')
+            .select('*')
+            .order('id', { ascending: true });
         if (supabaseError) {
             console.error('Error fetching rooms:', supabaseError.message);
             error.value = '部屋情報の取得に失敗しました。';
@@ -38,9 +40,17 @@
             if (data.length > 0) {
                 const userId = data[0].id;
                 const currentTime = new Date().toISOString();
-                const { error: updateError } =
-                    await supabase.from('users').update({ last_login: currentTime, INorOUT: true }).eq('id', userId);
-                router.push(`/room/${roomId.value}/${userId}`);
+                const { error: updateError } = await supabase
+                    .from('users')
+                    .update({ last_login: currentTime, INorOUT: true })
+                    .eq('id', userId);
+                router.push({
+                    path: `/room/${roomId.value}`,
+                    query: {
+                        userId: data[0].id,
+                        name: data[0].name
+                    }
+                });
             } else {
                 password.value = '';
                 error.value = '条件に一致するユーザーが見つかりませんでした。';
