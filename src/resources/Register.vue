@@ -57,8 +57,9 @@
 </script>
 
 <template>
-    <div>
-        <h1>新規ユーザー登録</h1>
+    <div class="form">
+        <h1>Assign Tasks</h1>
+        <h3>新規ユーザー登録</h3>
         <form @submit.prevent="registerAndLogin">
             <select v-model="roomId" required>
                 <option disabled value="">部屋を選択してください</option>
@@ -69,7 +70,7 @@
             <input v-model="name" placeholder="ユーザー名" required />
             <input v-model="password" type="password" placeholder="パスワード" required />
             <input v-model="confirmPassword" type="password" placeholder="パスワード（確認用）" required />
-            <button @click="registerAndLogin">登録してログイン</button>
+            <button class=" button"@click="registerAndLogin">登録してログイン</button>
         </form>
         <p v-if="errorMessage">{{ errorMessage }}</p>
         <router-link to="/">ログインはこちら</router-link>

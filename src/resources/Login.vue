@@ -63,9 +63,10 @@
 </script>
 
 <template>
-    <div>
-        <h1>ログイン</h1>
-        <form @submit.prevent="login">
+    <div class="frame">
+        <h1>Assign Tasks</h1>
+        <h3>ログイン</h3>
+        <form class="form" @submit.prevent="login">
             <select v-model="roomId" required>
                 <option disabled value="">部屋選択</option>
                 <option v-for="room in rooms" :key="room.id" :value="room.id">
@@ -74,9 +75,35 @@
             </select>
             <input v-model="name" placeholder="ユーザー名" required />
             <input v-model="password" type="password" placeholder="パスワード" required />
-            <button type="submit">ログイン</button>
+            <button class="loginButton" type="submit">ログイン</button>
         </form>
         <p v-if="error">{{ error }}</p>
         <router-link to="/register">新規ユーザー登録はこちら</router-link>
     </div>
 </template>
+
+<style>
+    .frame {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        margin: 0 auto;
+        text-align: center;
+    }
+
+    .form {
+        width: 100%;
+        max-width: 400px;
+    }
+
+    .form > * {
+        margin-bottom: 15px;
+        width: 100%;
+    }
+
+    button {
+        align-self: center;
+    }
+</style>

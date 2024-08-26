@@ -64,26 +64,82 @@
 </script>
 
 <template>
-    <button @click="logout">ログアウト</button>
-    <div class="task-board">
+    <header>
+        <h1>Assign Tasks</h1>
+        <button @click="logout">ログアウト</button>
+    </header>
+    <div class="task-board d-flex">
         <div v-for="user in users" :key="user.id" class="User column">
-            <div class="Name" v-bind:style="getUserStyle(user)">
-                {{ user.name }}
+            <div class="Name Border">
+                <p v-bind:style="getUserStyle(user)">{{ user.name }}</p>
             </div>
-            <div class="assignedTasks"></div>
+            <div class="AssignedTasks Border"></div>
         </div>
         <div class="Priority column">
-            <div class="Name">優先順位</div>
-            <div class="assignedTasks"></div>
+            <div class="Name Border">実装予定のタスク</div>
+            <div class="AssignedTasks Border"></div>
         </div>
         <div class="Tasks column">
-            <div class="Name">タスク</div>
-            <div class="assignedTasks"></div>
+            <div class="Name Border">その他のタスク</div>
+            <div class="AssignedTasks Border"></div>
         </div>
     </div>
-    <div class="trash" @dragover.prevent @drop="deleteTask">ゴミ箱</div>
-    <form @submit.prevent="createTask">
-        <input v-model="newTask" placeholder="タスクを入力" required />
-        <button type="submit">作成</button>
-    </form>
+    <div class="mt-4 clearfix">
+        <div class="float-start">
+            <i class="fa-solid fa-dumpster fa-5x" @dragover.prevent @drop="deleteTask"></i>
+            <h5 class="trash">ゴミ箱</h5>
+        </div>
+        <form class="float-end" @submit.prevent="createTask">
+            <input class="inputFields" v-model="newTask" placeholder="タスクを入力" required />
+            <button class="createButton" type="submit">作成</button>
+        </form>
+    </div>
 </template>
+
+<style>
+    .column {
+        width: 120px;
+        margin-right: 5px;
+    }
+    
+    .Border {
+        border: 1px solid black;
+    }
+
+    .Name {
+        height: 30px;
+    }
+
+    .AssignedTasks {
+        height: 200px;
+    }
+
+    .Priority {
+        margin-left: 120px;
+    }
+
+    .float-start {
+        position: relative;
+    }
+
+    .fa-dumpster {
+        margin-left: 20px;
+    }
+
+    .trash {
+        color: white;
+        position: absolute;
+        top: 50%;
+        left: 37.5%;
+        z-index: 1;
+    }
+
+    .inputFields {
+        width: 350px;
+    }
+
+    .createButton {
+        margin-left: 5px;
+        margin-right: 60px;
+    }
+</style>
