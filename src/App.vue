@@ -1,6 +1,13 @@
 <template>
   <div id="app">
-    <h1>Assign Tasks</h1>
     <router-view/>
   </div>
 </template>
+
+<style>
+  #app {
+    width: 95%;
+    align-items: center;
+    margin: 0 auto;
+  }
+</style>
