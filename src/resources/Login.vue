@@ -42,7 +42,7 @@
                 const currentTime = new Date().toISOString();
                 const { error: updateError } = await supabase
                     .from('users')
-                    .update({ last_login: currentTime, INorOUT: true })
+                    .update({ last_action: currentTime, INorOUT: true })
                     .eq('id', userId);
                 router.push({
                     path: `/room/${roomId.value}`,
