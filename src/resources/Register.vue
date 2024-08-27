@@ -26,41 +26,44 @@
         if (password.value !== confirmPassword.value) {
             password.value = '';
             confirmPassword.value = '';
-            errorMessage.value = 'パスワードが一致しません。';
+            errorMessage.value = 'パスワードと確認用のパスワードが一致しませんでした。';
             return;
         }
 
-        const { data, error } = await supabase.from('users').insert([{
-            room_id: roomId.value,
-            name: name.value,
-            password: password.value,
-        }]);
-
-        if (error) {
-            console.error('Error registering user:', error.message);
-            errorMessage.value = error.message;
+        const { data: existingUser } = await supabase
+            .from('users')
+            .select('id')
+            .eq('room_id', roomId.value)
+            .eq('name', name.value)
+            .single();
+        if (existingUser) {
+            errorMessage.value = 'この部屋にはすでに同じ名前のユーザーが存在します。'
         } else {
-            console.log('User registered and logged in:', data);
-            const { data, error: supabaseError } = await supabase
+            await supabase.from('users').insert([{
+                room_id: roomId.value,
+                name: name.value,
+                password: password.value,
+            }]);
+            const { data } = await supabase
                 .from('users')
-                .select('id')
-                .order('id', { ascending: false }).limit(1);
+                .select('id, room_id')
+                .order('id', { ascending: false}).limit(1);
             router.push({
                 path: `/room/${data[0].room_id}`,
                 query: {
-                    userId: data[0].room_id,
-                    name: data[0].name
+                    userId: data[0].id,
+                    name: name.value
                 }
-            });
+            })
         }
     }
 </script>
 
 <template>
-    <div class="form">
+    <div class="frame">
         <h1>Assign Tasks</h1>
         <h3>新規ユーザー登録</h3>
-        <form @submit.prevent="registerAndLogin">
+        <form class="form" @submit.prevent="registerAndLogin">
             <select v-model="roomId" required>
                 <option disabled value="">部屋を選択してください</option>
                 <option v-for="room in rooms" :key="room.id" :value="room.id">

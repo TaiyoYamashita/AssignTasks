@@ -1,5 +1,5 @@
 <script setup>
-    import { ref, onMounted } from 'vue'
+    import { ref, onMounted,onUnmounted } from 'vue'
     import { useRoute, useRouter } from 'vue-router';
     import supabase from '../supabase';
     import draggable from 'vuedraggable';
@@ -12,44 +12,65 @@
     const name = route.query.name;
     const tasks = ref([]);
     const newTask = ref('');
-    const error = ref('');
 
-    onMounted(async () => {
+    const getUsers = async () => {
         const { data, error } = await supabase
             .from('users')
-            .select('id, name, last_login, INorOUT')
+            .select('id, name, last_action, INorOUT')
             .eq('room_id', roomId)
             .order('id', { ascending: true });
         if (error) { console.error('Error fetching users:', error.message); }
         else { users.value = data; }
+    };
+
+    const updateLastAction = async () => {
+        try {
+            const { error } = await supabase
+                .from('users')
+                .update({ last_action: new Date() })
+                .eq('id', userId);
+            if (error) { console.error('Error updating last_action:', error.message); }
+        } catch (err) { console.error('Error updating last_action:', err.message); }
+    }
+
+    onMounted(() => {
+        getUsers();
+        window.addEventListener('mousemove', updateLastAction);
+        window.addEventListener('keydown', updateLastAction);
+        const interval = setInterval(() => { getUsers(); }, 1000);
+        onUnmounted(() => {
+            clearInterval(interval);
+            window.addEventListener('mousemove', updateLastAction);
+            window.addEventListener('keydown', updateLastAction);
+        });
     });
 
     const getUserStyle = (user) => {
         let nameStyle = {};
         if (user.INorOUT) {
             const currentTime = new Date();
-            const lastLoginTime = new Date(user.last_login);
+            const lastLoginTime = new Date(user.last_action);
             const fifteenMinutesLater = (currentTime - lastLoginTime) >= 15 * 60 * 1000;
-            if (fifteenMinutesLater) { nameStyle.opacity = 0.4; }
+            if (fifteenMinutesLater) { nameStyle.opacity = 0.3; }
             if (user.name === name) { nameStyle.color = 'red'; }
             else { nameStyle.color = 'green'; }
         } else {
             nameStyle.color = 'black';
-            nameStyle.opacity = 0.4;
+            nameStyle.opacity = 0.3;
         }
         return nameStyle;
     };
 
     const createTask = () => {
         if (newTask.value.trim()) {
-            tasks.value.push
+            tasks.value.push({ name: newTask.value, progress: TRUE });
             newTask.value = '';
         }
     };
 
     const deleteTask = (index) => { tasks.value.splice(index, 1); };
 
-    const toggleTaskColor = (task) => { task.color = task.color === 'blue' ? 'red' : 'blue'; };
+    const toggleTaskColor = (task) => { task.progress ? 'blue' : 'red'; };
 
     const logout = async () => {
         try {
@@ -140,6 +161,6 @@
 
     .createButton {
         margin-left: 5px;
-        margin-right: 60px;
+        margin-right: 30px;
     }
 </style>
